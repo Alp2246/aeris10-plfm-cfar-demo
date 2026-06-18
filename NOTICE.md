@@ -85,7 +85,9 @@ All files under `output/` are **generated results** from running the demos. They
 
 | File | Source tool |
 |------|-------------|
-| `cfar_demo.png`, `cfar_ppi.png`, `cfar_results.txt` | MATLAB `radar_cfar_demo.m` |
+| `output/matlab/cfar/*.png`, `cfar_results.txt` | MATLAB `radar_cfar_demo.m` (5 panels + 4-panel) |
+| `output/cfar_demo.png`, `cfar_ppi.png` | Legacy copies of CFAR run (same script) |
+| `output/matlab/gallery/*.png` | Fetched from [matlab-fmcw-isac-examples](https://github.com/Alp2246/matlab-fmcw-isac-examples), [matlab-wireless-comm-examples](https://github.com/Alp2246/matlab-wireless-comm-examples), [gnss-spoofing-research](https://github.com/Alp2246/gnss-spoofing-research) — MIT |
 | `iverilog_range_profile.png` | Python `plot_range_profile.py` |
 | `iverilog_cfar_demo_log.txt`, `iverilog_cfar_detections.txt` | Icarus `demo.ps1` / `vvp` |
 | `iverilog_module_tests_summary.txt` | Icarus `sim.ps1 -Radar` |

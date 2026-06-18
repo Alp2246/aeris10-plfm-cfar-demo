@@ -24,10 +24,12 @@ if ($matlab) {
     Push-Location $matDir
     & $exe -batch "radar_cfar_demo; exit"
     Pop-Location
-    Copy-Item (Join-Path $matDir "output\*") $outDir -Force
 } else {
     Write-Warning "MATLAB not found — skipping MATLAB outputs"
 }
+
+Write-Host "==> MATLAB gallery (sibling repos)"
+& (Join-Path $repoRoot "scripts\fetch_matlab_gallery.ps1")
 
 Write-Host "==> Icarus Verilog CFAR demo"
 $env:Path = "C:\iverilog\bin;C:\iverilog\gtkwave\bin;" + $env:Path

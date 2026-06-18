@@ -297,12 +297,27 @@ ylim([ymin ymax]);
 sgtitle('AERIS-10  PLFM RADAR  -  CFAR Detection Demo', ...
         'Color','w','FontSize',16,'FontWeight','bold');
 
-%% --- PNG cikti ----------------------------------------------------------
-outDir = fullfile(fileparts(mfilename('fullpath')), 'output');
+%% --- PNG cikti (4 panel ayri + birlesik + PPI) ---------------------------
+repoRoot = fileparts(fileparts(mfilename('fullpath')));
+outDir   = fullfile(repoRoot, 'output', 'matlab', 'cfar');
 if ~exist(outDir, 'dir'), mkdir(outDir); end
-outFile = fullfile(outDir, 'cfar_demo.png');
+
+panelAxes  = [ax1, ax2, ax3, ax4];
+panelFiles = {'01_range_profile.png', '02_ppi_scope.png', ...
+              '03_time_domain.png', '04_cfar_window.png'};
+for p = 1:4
+    pFile = fullfile(outDir, panelFiles{p});
+    exportgraphics(panelAxes(p), pFile, 'Resolution', 150, 'BackgroundColor', 'current');
+    fprintf('  Panel PNG   : %s\n', pFile);
+end
+
+outFile = fullfile(outDir, 'cfar_demo_4panel.png');
 exportgraphics(fig, outFile, 'Resolution', 150, 'BackgroundColor', 'current');
-fprintf('  PNG yazildi  : %s\n\n', outFile);
+fprintf('  4-panel PNG : %s\n', outFile);
+
+% Legacy paths (repo output/ root — README uyumlulugu)
+legacyDir = fullfile(repoRoot, 'output');
+copyfile(outFile, fullfile(legacyDir, 'cfar_demo.png'), 'f');
 
 %% --- Tek ayrı PPI penceresi (buyuk) -----------------------------------
 fig2 = figure('Name','PPI Scope','Position',[200 150 800 800], ...
@@ -368,9 +383,10 @@ xlabel('Cross-range (m)','Color',[0.5 1 0.5]);
 ylabel('Down-range (m)','Color',[0.5 1 0.5]);
 grid off; box on;
 
-ppiFile = fullfile(outDir, 'cfar_ppi.png');
+ppiFile = fullfile(outDir, '05_ppi_full.png');
 exportgraphics(fig2, ppiFile, 'Resolution', 150, 'BackgroundColor','current');
 fprintf('  PPI PNG     : %s\n', ppiFile);
+copyfile(ppiFile, fullfile(legacyDir, 'cfar_ppi.png'), 'f');
 
 % Konsol ozeti de kaydet (GitHub / dokumantasyon icin)
 summaryFile = fullfile(outDir, 'cfar_results.txt');
@@ -388,5 +404,6 @@ for k = 1:length(detBins)
         b, rangeAxis(b), rangeAxis(b)/1000, mag(b), threshold(b), margin_pct);
 end
 fclose(fid);
+copyfile(summaryFile, fullfile(legacyDir, 'cfar_results.txt'), 'f');
 fprintf('  Ozet TXT    : %s\n', summaryFile);
 fprintf('\n>> Iki figure penceresi acildi. Kapatmak icin: close all\n\n');

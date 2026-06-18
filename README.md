@@ -57,9 +57,32 @@ Full walkthrough: [**docs/VERILOG_WALKTHROUGH.md**](docs/VERILOG_WALKTHROUGH.md)
 | Artifact | Link |
 |----------|------|
 | Range profile (plot) | [output/iverilog_range_profile.png](output/iverilog_range_profile.png) |
-| 4-panel figures | [output/cfar_demo.png](output/cfar_demo.png) |
+| MATLAB 4-panel | [output/cfar_demo.png](output/cfar_demo.png) |
+| MATLAB panels (×5) | [output/matlab/cfar/](output/matlab/cfar/) |
+| Other MATLAB demos | [output/matlab/gallery/](output/matlab/gallery/) |
 | Sim log | [output/iverilog_cfar_demo_log.txt](output/iverilog_cfar_demo_log.txt) |
 | Cross-check | [output/matlab_vs_verilog_comparison.txt](output/matlab_vs_verilog_comparison.txt) |
+
+### MATLAB — CFAR panels
+
+| | | |
+|:---:|:---:|:---:|
+| ![range](output/matlab/cfar/01_range_profile.png) | ![ppi](output/matlab/cfar/02_ppi_scope.png) | ![time](output/matlab/cfar/03_time_domain.png) |
+| Range + CFAR | PPI scope | Time domain |
+| ![window](output/matlab/cfar/04_cfar_window.png) | ![ppi full](output/matlab/cfar/05_ppi_full.png) | |
+| Sliding window | Full PPI | |
+
+### MATLAB — related demos (gallery)
+
+| FMCW RD | FMCW MIMO | Kalman | ISAC OFDM |
+|:---:|:---:|:---:|:---:|
+| ![rd](output/matlab/gallery/fmcw_range_doppler.png) | ![mimo](output/matlab/gallery/fmcw_mimo_animasyon.png) | ![kalman](output/matlab/gallery/fmcw_kalman_tracker.png) | ![isac](output/matlab/gallery/isac_ofdm_sensing.png) |
+
+| BPSK BER | GNSS PRN bias | Spoof residual | Track metrics |
+|:---:|:---:|:---:|:---:|
+| ![bpsk](output/matlab/gallery/bpsk_ber_awgn.png) | ![prn](output/matlab/gallery/pseudorange_prn_bias_fig1.png) | ![res](output/matlab/gallery/residual_spoof_detect.png) | ![track](output/matlab/gallery/softgnss_track_metrics.png) |
+
+Sources: [matlab-fmcw-isac-examples](https://github.com/Alp2246/matlab-fmcw-isac-examples) · [matlab-wireless-comm-examples](https://github.com/Alp2246/matlab-wireless-comm-examples) · [gnss-spoofing-research](https://github.com/Alp2246/gnss-spoofing-research)
 
 ---
 
