@@ -23,7 +23,7 @@
 | MATLAB twin | [`matlab/radar_cfar_demo.m`](matlab/radar_cfar_demo.m) | Same scenario — figures for reports |
 | Walkthrough | [`docs/VERILOG_WALKTHROUGH.md`](docs/VERILOG_WALKTHROUGH.md) | Architecture + annotated code |
 
-**DUT (not mine):** [`third_party/cfar_ca.v`](third_party/cfar_ca.v) — CA-CFAR block from [AERIS-10 PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR).
+**DUT (upstream IP):** [`third_party/cfar_ca.v`](third_party/cfar_ca.v) — CA-CFAR block from [AERIS-10 PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) (CERN-OHL-P). License details: [NOTICE.md](NOTICE.md).
 
 ---
 
@@ -96,6 +96,10 @@ iverilog_demo/          ← demo.ps1, GTKWave config
 matlab/                 ← MATLAB figures
 output/                 ← committed run artifacts
 docs/VERILOG_WALKTHROUGH.md
+LICENSE                  MIT — original work
+NOTICE.md                Full license split (MIT vs CERN-OHL-P)
+CREDITS.md               Author + citation examples
+CITATION.cff             Machine-readable metadata
 ```
 
 ---
@@ -110,5 +114,18 @@ docs/VERILOG_WALKTHROUGH.md
 
 ## License & credits
 
-MIT — my testbench, scripts, docs, and `output/` artifacts.  
-DUT credit: AERIS-10 team. See [CREDITS.md](CREDITS.md).
+This repo uses **two licenses** — original demo work vs upstream FPGA IP.
+
+| Component | Author | License | Details |
+|-----------|--------|---------|---------|
+| `hdl/`, `matlab/`, `scripts/`, `output/`, docs | [Alperen Bugra Ozer](https://github.com/Alp2246) | **MIT** | [LICENSE](LICENSE) |
+| `third_party/cfar_ca.v` (DUT) | [AERIS-10 / PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) | **CERN-OHL-P** | [third_party/](third_party/) |
+
+**Full breakdown** (file-by-file, output artifacts, tool licenses, attribution text):
+
+- [NOTICE.md](NOTICE.md) — complete license notice  
+- [CREDITS.md](CREDITS.md) — author + thesis citation examples  
+- [CITATION.cff](CITATION.cff) — machine-readable cite metadata  
+
+[![License: MIT](https://img.shields.io/badge/Original%20work-MIT-yellow.svg)](LICENSE)
+[![Hardware: CERN-OHL-P](https://img.shields.io/badge/DUT-CERN--OHL--P-blue.svg)](https://ohwr.org/cern_ohl_p_v2.txt)

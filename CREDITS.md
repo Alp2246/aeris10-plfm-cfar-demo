@@ -1,7 +1,46 @@
-# Credits
+# Credits & attribution
 
-**Repository author:** [Alperen Bugra Ozer](https://github.com/Alp2246) — Verilog testbench, simulation scripts, MATLAB demo, documentation.
+## Author
 
-**Device under test:** `cfar_ca.v` from the [AERIS-10 / PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) open-hardware project.
+**Alperen Bugra Ozer** — [GitHub @Alp2246](https://github.com/Alp2246)
 
-**License:** MIT for original work in this repo. See [LICENSE](LICENSE).
+| Contribution | Location |
+|--------------|----------|
+| Verilog system testbench (CFAR demo) | [`hdl/radar_demo_tb.v`](hdl/radar_demo_tb.v) |
+| Icarus simulation harness | [`iverilog_demo/demo.ps1`](iverilog_demo/demo.ps1), [`sim.ps1`](iverilog_demo/sim.ps1) |
+| MATLAB twin demo + figures | [`matlab/radar_cfar_demo.m`](matlab/radar_cfar_demo.m) |
+| Documentation & walkthrough | [`docs/VERILOG_WALKTHROUGH.md`](docs/VERILOG_WALKTHROUGH.md) |
+| Committed run outputs | [`output/`](output/) |
+
+---
+
+## Upstream — AERIS-10 / PLFM_RADAR
+
+| Component | Credit |
+|-----------|--------|
+| `cfar_ca.v` (CA-CFAR FPGA module) | [NawfalMotii79/PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) — AERIS-10 open-hardware team |
+| Radar system concept & full RTL tree | Same repository — see upstream for complete design |
+
+---
+
+## Licenses (summary)
+
+| Scope | License | Full text |
+|-------|---------|-----------|
+| Original work in this repo | **MIT** | [LICENSE](LICENSE) |
+| `third_party/cfar_ca.v` | **CERN-OHL-P v2** | [ohwr.org/cern_ohl_p_v2.txt](https://ohwr.org/cern_ohl_p_v2.txt) |
+| File-by-file breakdown | — | [NOTICE.md](NOTICE.md) |
+
+**For thesis / report footnote (MIT part):**
+
+> Ozer, A. B. (2026). *AERIS-10 PLFM Radar CFAR Verification Demo* (Verilog testbench & MATLAB). GitHub. https://github.com/Alp2246/aeris10-plfm-cfar-demo — MIT License.
+
+**For DUT / hardware citation:**
+
+> Nawfal Motii et al., *AERIS-10 PLFM Radar* (open-source hardware). https://github.com/NawfalMotii79/PLFM_RADAR — CERN-OHL-P.
+
+---
+
+## Citation file
+
+Machine-readable metadata: [`CITATION.cff`](CITATION.cff) (if present in repo root).

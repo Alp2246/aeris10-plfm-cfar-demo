@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: AERIS-10 PLFM Radar CFAR Verification Demo
+message: >-
+  If you use this testbench or committed outputs, please cite this repository
+  and credit the upstream AERIS-10 PLFM_RADAR project for cfar_ca.v.
+type: software
+authors:
+  - family-names: Ozer
+    given-names: Alperen Bugra
+    alias: Alp2246
+repository-code: https://github.com/Alp2246/aeris10-plfm-cfar-demo
+url: https://github.com/Alp2246/aeris10-plfm-cfar-demo
+license: MIT
+keywords:
+  - verilog
+  - radar
+  - cfar
+  - fpga
+  - testbench
+  - aeris-10
+  - plfm
