@@ -1,0 +1,19 @@
+AERIS-10 Radar — Icarus Verilog Module Test Summary
+Generated: 2026-06-18
+Command: .\sim.ps1 -Radar
+
+Module                  | Status
+------------------------+-------
+cdc_modules             | PASS
+cfar_ca                 | PASS
+edge_detector           | PASS
+fir_lowpass             | PASS
+fpga_self_test          | PASS
+latency_buffer          | PASS
+mf_cosim                | PASS
+mti_canceller           | PASS
+radar_mode_controller   | PASS
+range_bin_decimator     | PASS
+rx_gain_control         | PASS
+
+Total: 11 PASS, 0 FAIL / 11 modules

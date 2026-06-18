@@ -1,0 +1,17 @@
+AERIS-10 Icarus Verilog CFAR Demo — Detection Summary
+Generated: 2026-06-18
+Toolchain: Icarus Verilog + vvp
+Testbench: iverilog_demo/radar_demo_tb.v
+RTL: cfar_ca.v (from PLFM_RADAR)
+
+Scenario: 64 range bins, Doppler bin 0, LFSR noise seed 0xA5A51234
+CFAR: CA-CFAR guard=2 train=8 alpha=0x05 (Q4.4)
+
+bin | range_m | km   | magnitude | threshold | margin_pct | result
+----+---------+------+-----------+-----------+------------+-------
+  8 |     192 | 0.19 |     30000 |      8536 |        251 | DETECT
+ 22 |     528 | 0.53 |     20000 |     10050 |         99 | DETECT
+ 45 |    1080 | 1.08 |     50000 |      9803 |        410 | DETECT
+
+Summary: 3/3 ground-truth targets detected, 0 false alarms
+Status: PASS

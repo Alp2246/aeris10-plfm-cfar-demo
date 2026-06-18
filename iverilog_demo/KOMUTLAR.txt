@@ -1,0 +1,257 @@
+================================================================
+  AERIS-10 / PLFM RADAR - Icarus Verilog Simulasyon Komutlari
+================================================================
+  Kopyala-yapistir referansi. PowerShell'de calistir.
+  PATH kalici eklendi -> yeni terminal acmak yeterli.
+================================================================
+
+
+================================================================
+  0) KURULUM (BIR KEZ - zaten yapildi)
+================================================================
+
+# Icarus Verilog kurulumu (winget ile)
+winget install --id Icarus.Verilog --silent --accept-source-agreements --accept-package-agreements
+
+# PATH'e ekle (kalici, kullanici icin)
+$userPath = [System.Environment]::GetEnvironmentVariable("Path","User")
+[System.Environment]::SetEnvironmentVariable("Path","C:\iverilog\bin;C:\iverilog\gtkwave\bin;$userPath","User")
+
+# Eger PATH yoksa, gecici olarak ekle (her terminal acilisinda)
+$env:Path = "C:\iverilog\bin;C:\iverilog\gtkwave\bin;" + $env:Path
+
+# Kurulumu dogrula
+iverilog -V
+vvp -V
+gtkwave --version
+
+
+================================================================
+  1) RADAR PROJESI - TUM PAKET TEK KOMUT (ONERILEN)
+================================================================
+
+# Proje klasorune git
+cd C:\fpga_work\PLFM_RADAR-main\PLFM_RADAR-main\iverilog_demo
+
+# 11 radar modulunu sirayla kostur (toplam ~30 saniye)
+.\sim.ps1 -Radar
+
+# Beklenen ozet:
+#   Ozet: 11 PASS, 0 FAIL / 11 modul
+
+
+================================================================
+  2) RADAR PROJESI - TEK MODUL
+================================================================
+
+cd C:\fpga_work\PLFM_RADAR-main\PLFM_RADAR-main\iverilog_demo
+
+# Calisan radar modulleri (her biri ayri test edilebilir):
+.\sim.ps1 cdc_modules                  # 57 test - clock domain crossing
+.\sim.ps1 cfar_ca                      # 23 test - CFAR hedef tespiti
+.\sim.ps1 edge_detector                # 17 test - kenar dedektoru
+.\sim.ps1 fir_lowpass                  # 13 test - FIR alcak gecirgen
+.\sim.ps1 fpga_self_test               # 16 test - sistem self-test
+.\sim.ps1 latency_buffer               # gecikme tampon bellegi
+.\sim.ps1 mf_cosim                     # 3 test - matched filter
+.\sim.ps1 mti_canceller                # 29 test - MTI clutter iptali
+.\sim.ps1 radar_mode_controller        # 80 test - mod kontrolu
+.\sim.ps1 range_bin_decimator          # 63 test - menzil decimasyon
+.\sim.ps1 rx_gain_control              # 32 test - RX gain control
+
+
+================================================================
+  3) DALGA FORMU (GTKWAVE) ILE BIRLIKTE KOSTUR
+================================================================
+
+cd C:\fpga_work\PLFM_RADAR-main\PLFM_RADAR-main\iverilog_demo
+
+.\sim.ps1 cfar_ca -OpenWave            # CFAR + dalga formu penceresi
+.\sim.ps1 mti_canceller -OpenWave      # MTI + dalga
+.\sim.ps1 radar_mode_controller -OpenWave
+.\sim.ps1 cdc_modules -OpenWave
+
+# Sadece dalga formu acmak (sim koşulmussa):
+gtkwave tb_cfar_ca.vcd
+gtkwave tb_mti_canceller.vcd
+
+
+================================================================
+  4) BUTUN TESTBENCHLER ILE TARAMA (34 modul, ~3 dakika)
+================================================================
+
+cd C:\fpga_work\PLFM_RADAR-main\PLFM_RADAR-main\iverilog_demo
+
+# Calisanlari + iverilog ile uyumsuzlari otomatik ayir
+.\sim.ps1 -All
+
+# Mevcut tum testbench'leri listele
+.\sim.ps1 -List
+
+
+================================================================
+  5) ELLE (SCRIPT OLMADAN) - SAF IVERILOG KOMUTLARI
+================================================================
+
+cd C:\fpga_work\PLFM_RADAR-main\PLFM_RADAR-main\iverilog_demo
+
+# Tek modul - elle 3 adim:
+
+# 5a) Compile (Verilog -> VVP bytecode)
+iverilog -g2012 -o cfar.vvp -s tb_cfar_ca `
+    ..\9_Firmware\9_2_FPGA\tb\tb_cfar_ca.v `
+    ..\9_Firmware\9_2_FPGA\cfar_ca.v
+
+# 5b) Simulate (terminal ciktisi + VCD uretir)
+vvp cfar.vvp
+
+# 5c) Dalga formunu ac
+gtkwave tb_cfar_ca.vcd
+
+
+================================================================
+  6) TUM RTL DOSYALARI ILE BIRDEN COK MODULU LINK ET
+================================================================
+
+cd C:\fpga_work\PLFM_RADAR-main\PLFM_RADAR-main\iverilog_demo
+
+# Tum projeyi linkle (Xilinx XPM iceren dosyalar haric)
+$RTL = "..\9_Firmware\9_2_FPGA"
+$TB  = "$RTL\tb\tb_cfar_ca.v"
+$SRC = (Get-ChildItem "$RTL\*.v" | Where-Object { $_.Name -notmatch "radar_system_top|adc_clk_mmcm" } | ForEach-Object FullName)
+
+iverilog -g2012 -o cfar.vvp -s tb_cfar_ca $TB @SRC
+vvp cfar.vvp
+
+
+================================================================
+  7) SADECE SYNTAX KONTROLU (HIZLI - SIMULE ETMEDEN)
+================================================================
+
+cd C:\fpga_work\PLFM_RADAR-main\PLFM_RADAR-main
+
+# Bir Verilog dosyasinin sentaksi temiz mi?
+iverilog -t null -g2012 9_Firmware\9_2_FPGA\edge_detector.v
+
+# Birden cok dosya
+iverilog -t null -g2012 9_Firmware\9_2_FPGA\*.v
+
+
+================================================================
+  8) SIFIRDAN YENI BIR TEST (PROJEDEN BAGIMSIZ)
+================================================================
+
+# Yeni klasor olustur
+cd $HOME\Desktop
+mkdir verilog_test
+cd verilog_test
+
+# counter.v dosyasini Notepad ile yaz
+notepad counter.v
+
+# Derle - kostur - dalga formu
+iverilog -o counter.vvp counter.v
+vvp counter.vvp
+gtkwave counter.vcd
+
+
+================================================================
+  9) PROBLEM CIKARSA
+================================================================
+
+# A) "iverilog tanimsiz komut" hatasi
+$env:Path = "C:\iverilog\bin;C:\iverilog\gtkwave\bin;" + $env:Path
+
+# B) "sim.ps1 calistirilamiyor" (execution policy)
+powershell -NoProfile -ExecutionPolicy Bypass -File .\sim.ps1 -Radar
+
+# C) Kurulum gercekten oldu mu?
+Get-ChildItem C:\iverilog\bin
+
+# D) Vivado calisirken ayri terminal kullan, iverilog Vivado'ya dokunmaz.
+
+
+================================================================
+  10) VIVADO (BITSTREAM ICIN - KART GELDIGINDE)
+================================================================
+
+cd C:\fpga_work\PLFM_RADAR-main\PLFM_RADAR-main\9_Firmware\9_2_FPGA
+
+# Vivado'da projeyi GUI'de ac
+C:\Xilinx\Vivado\2022.2\bin\vivado.bat build\aeris10_radar.xpr
+
+# Sifirdan yeniden build (tam akis)
+C:\Xilinx\Vivado\2022.2\bin\vivado.bat -mode batch -source scripts\200t\build_200t.tcl
+
+# Karta bitstream yukle (JTAG bagliyken)
+C:\Xilinx\Vivado\2022.2\bin\vivado.bat -mode batch -source scripts\utils\program_fpga.tcl
+
+
+================================================================
+  HIZLI BASLAR (en sik kullanacaklarin)
+================================================================
+
+# 1) PowerShell ac, sunlari yapistir:
+
+cd C:\fpga_work\PLFM_RADAR-main\PLFM_RADAR-main\iverilog_demo
+.\sim.ps1 -Radar
+
+# 2) Belirli bir moduldeki dalga formuna bakmak icin:
+
+.\sim.ps1 cfar_ca -OpenWave
+
+# 3) Yeni terminallerde iverilog tanitilmiyorsa:
+
+$env:Path = "C:\iverilog\bin;C:\iverilog\gtkwave\bin;" + $env:Path
+
+
+================================================================
+  GTKWAVE KULLANIMI (DALGA FORMU PENCERESI)
+================================================================
+
+  1. Sol ust panelde "tb_xxx" modul agacina TIKLA
+  2. Alt panelde sinyaller cikar (clk, data, valid, vs.)
+  3. Sinyale CIFT TIKLA -> sag tarafa eklenir
+  4. Ctrl+Shift+F -> tum zaman araligini sigdir
+  5. Sag tik -> Data Format -> Decimal/Hex/Binary
+  6. Bus sinyallerinde sag tik -> Expand -> tek tek bitleri gor
+
+
+================================================================
+  KOSAN MODULLERIN RADAR ZINCIRINDEKI YERI
+================================================================
+
+  [ADC verisi]
+        |
+        v
+  cdc_modules         <-- saat domain gecisi (400 MHz -> 100 MHz)
+        |
+        v
+  fir_lowpass         <-- DDC sonrasi filtre
+        |
+        v
+  range_bin_decimator <-- menzil sikistirma
+        |
+        v
+  mf_cosim            <-- matched filter (puls compression)
+        |
+        v
+  mti_canceller       <-- clutter (sabit hedef) iptali
+        |
+        v
+  cfar_ca             <-- CFAR hedef tespiti
+        |
+        v
+  [Hedef listesi -> USB -> PC]
+
+  Kontrol/destek modulleri:
+    radar_mode_controller -- arama/takip/calibrasyon mod gecisleri
+    rx_gain_control       -- alici kazanc otomatik kontrol
+    edge_detector         -- kenar/tetik tespiti
+    latency_buffer        -- pipeline gecikme tampon
+    fpga_self_test        -- BIST (built-in self test)
+
+
+================================================================
+  Yardim icin:  https://steveicarus.github.io/iverilog/
+================================================================

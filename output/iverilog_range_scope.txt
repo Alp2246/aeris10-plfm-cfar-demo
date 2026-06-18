@@ -1,0 +1,8 @@
+AERIS-10 ASCII Range Scope (Icarus Verilog demo.ps1)
+0 m                                                          1.5 km
+| ........*...............*...........................*...... |
+| +         +         +         +         +         +         + |
+|  0      240    480    720    960   1200   1440  metre
+
+* = detected target at bins 8 (192 m), 22 (528 m), 45 (1080 m)
+. = noise floor (~2000 magnitude)

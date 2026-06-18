@@ -1,0 +1,19 @@
+MATLAB vs Icarus Verilog — CFAR Demo Cross-Check
+================================================
+Same scenario: bins 8/22/45 @ 192/528/1080 m, magnitudes 30000/20000/50000
+
+Detection bins (both tools): 8, 22, 45  — MATCH
+False alarms (both tools): 0           — MATCH
+
+Note on threshold/margin values:
+  MATLAB uses floating-point CA-CFAR on decimated magnitudes.
+  Verilog uses fixed-point Q-format arithmetic in cfar_ca.v.
+  Detection decisions align; numeric threshold differs slightly per implementation.
+
+bin | range_m | MATLAB thr | MATLAB margin | Verilog thr | Verilog margin
+----+---------+------------+---------------+-------------+----------------
+  8 |     192 |      12051 |          149% |        8536 |            251%
+ 22 |     528 |      14180 |           41% |       10050 |             99%
+ 45 |    1080 |      13426 |          272% |        9803 |            410%
+
+Conclusion: All three targets detected in both pipelines. Safe for coursework / FPGA bring-up validation.

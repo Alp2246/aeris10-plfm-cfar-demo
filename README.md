@@ -1,96 +1,119 @@
-# AERIS-10 PLFM Radar — CA-CFAR MATLAB Demo
+# AERIS-10 PLFM Radar — CFAR Demos (MATLAB + Verilog)
 
 [![MATLAB](https://img.shields.io/badge/MATLAB-R2019b+-blue.svg)](https://www.mathworks.com/products/matlab.html)
+[![Icarus Verilog](https://img.shields.io/badge/Icarus-Verilog-orange.svg)](https://steveicarus.github.io/iverilog/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Radar: X-band](https://img.shields.io/badge/Radar-10.5%20GHz-green.svg)]()
 
-MATLAB visualization of **Cell-Averaging CFAR (CA-CFAR)** for the open-source [AERIS-10 PLFM phased-array radar](https://github.com/NawfalMotii79/PLFM_RADAR). The scenario matches the Verilog testbench (`iverilog_demo/radar_demo_tb.v`) and FPGA module `cfar_ca.v` — same noise seed, guard/train cells, and alpha threshold.
+Open-source **CA-CFAR detection demos** for the [AERIS-10 PLFM phased-array radar](https://github.com/NawfalMotii79/PLFM_RADAR). Includes **committed run outputs** (figures, logs, summaries) under MIT license — see [NOTICE.md](NOTICE.md) for upstream hardware licensing.
 
-## Demo outputs
+Same scenario everywhere: 3 synthetic targets at bins **8 / 22 / 45** (192 m / 528 m / 1080 m), LFSR noise seed `0xA5A51234`, CA-CFAR **G=2, T=8, α=5/16**.
 
-| Figure | Description |
+---
+
+## Demo outputs (included in repo)
+
+### MATLAB figures
+
+| Output | Preview |
+|--------|---------|
+| 4-panel dashboard | ![cfar_demo](output/cfar_demo.png) |
+| PPI scope | ![cfar_ppi](output/cfar_ppi.png) |
+| Detection table | [`output/cfar_results.txt`](output/cfar_results.txt) |
+
+### Icarus Verilog figures and logs
+
+| Output | Description |
 |--------|-------------|
-| ![4-panel CFAR demo](output/cfar_demo.png) | Range profile, PPI scope, time-domain echo, CFAR sliding-window diagram |
-| ![PPI scope](output/cfar_ppi.png) | Full-size Plan Position Indicator with detected targets |
+| Range profile plot | ![iverilog_range](output/iverilog_range_profile.png) |
+| ASCII scope | [`output/iverilog_range_scope.txt`](output/iverilog_range_scope.txt) |
+| CFAR detections | [`output/iverilog_cfar_detections.txt`](output/iverilog_cfar_detections.txt) |
+| Full sim log | [`output/iverilog_cfar_demo_log.txt`](output/iverilog_cfar_demo_log.txt) |
+| 11-module test pack | [`output/iverilog_module_tests_summary.txt`](output/iverilog_module_tests_summary.txt) |
 
-**Detected targets (3):**
+### Cross-check
 
-| Range bin | Range | Magnitude | CFAR threshold | Margin |
-|-----------|-------|-----------|----------------|--------|
-| 8 | 192 m | 30,000 | 12,051 | +149% |
-| 22 | 528 m | 20,000 | 14,180 | +41% |
-| 45 | 1,080 m | 50,000 | 13,426 | +272% |
+| Output | Description |
+|--------|-------------|
+| MATLAB vs Verilog | [`output/matlab_vs_verilog_comparison.txt`](output/matlab_vs_verilog_comparison.txt) |
 
-See [`output/cfar_results.txt`](output/cfar_results.txt) for the machine-readable summary.
+**Verilog result:** 3/3 targets, 0 false alarms — **PASS**  
+**MATLAB result:** 3/3 targets — bins match (threshold math differs slightly: float vs fixed-point)
 
-## Radar parameters
-
-- Carrier: **10.5 GHz** (X-band)
-- Baseband sample rate: **100 MHz**
-- Range bin size: **24 m** (16× decimation)
-- Max range: **1536 m** (64 bins)
-- CFAR: **G=2, T=8, α=5/16** (Q4.4 fixed-point, same as FPGA)
+---
 
 ## Quick start
 
-### MATLAB GUI
+### Regenerate everything
+
+```powershell
+.\scripts\export_outputs.ps1
+```
+
+### MATLAB only
 
 ```matlab
 cd matlab
 radar_cfar_demo
 ```
 
-### Windows batch (headless)
-
 ```bat
-run_demo.bat
+matlab\run_demo.bat
 ```
 
-### Command line
+### Icarus Verilog CFAR demo
 
-```bat
-"C:\Program Files\MATLAB\R2025b\bin\matlab.exe" -batch "cd('matlab'); radar_cfar_demo; exit"
-```
-
-**Requirements:** MATLAB R2019b or newer. No toolboxes required.
-
-## Files
-
-```
-matlab/
-  radar_cfar_demo.m   % main script
-  run_demo.bat        % one-click Windows runner
-output/
-  cfar_demo.png       % 4-panel figure
-  cfar_ppi.png        % PPI scope
-  cfar_results.txt    % detection table
-```
-
-## FPGA / Verilog cross-reference
-
-| MATLAB | Verilog / FPGA |
-|--------|----------------|
-| CA-CFAR loop | `9_Firmware/9_2_FPGA/cfar_ca.v` |
-| Noise + 3 targets | `iverilog_demo/radar_demo_tb.v` |
-| Range decimation | `range_bin_decimator.v` |
-
-Re-run the Icarus Verilog demo to compare bit-exact detection flags:
-
-```bat
+```powershell
 cd iverilog_demo
-iverilog -o sim radar_demo_tb.v cfar_ca.v range_bin_decimator.v
-vvp sim
+.\demo.ps1 -NoWave
 ```
+
+### Full RTL module pack (11 tests)
+
+Requires full PLFM_RADAR clone:
+
+```powershell
+$env:PLFM_RADAR_ROOT = "C:\path\to\PLFM_RADAR-main"
+cd iverilog_demo
+.\sim.ps1 -Radar
+```
+
+---
+
+## Repository layout
+
+```
+matlab/                 MATLAB scripts + batch runner
+iverilog_demo/          demo.ps1, radar_demo_tb.v, bundled rtl/cfar_ca.v
+output/                 Committed demo artifacts (PNG, TXT, logs)
+scripts/                export_outputs.ps1, plot_range_profile.py
+LICENSE                 MIT (this repo's original work + outputs)
+NOTICE.md               MIT vs CERN-OHL-P upstream split
+```
+
+---
+
+## Radar parameters
+
+| Parameter | Value |
+|-----------|-------|
+| Carrier | 10.5 GHz (X-band) |
+| Baseband fs | 100 MHz |
+| Range bin | 24 m (16× decimation) |
+| Max range | 1536 m (64 bins) |
+| CFAR | CA-CFAR, G=2, T=8, α=5/16 |
+
+---
 
 ## Related projects
 
-- [PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) — full AERIS-10 hardware & firmware
+- [PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) — full AERIS-10 hardware and firmware (CERN-OHL-P)
 - [matlab-fmcw-isac-examples](https://github.com/Alp2246/matlab-fmcw-isac-examples) — FMCW / ISAC MATLAB demos
+
+---
 
 ## License
 
-MIT — see [LICENSE](LICENSE). AERIS-10 hardware is under [CERN-OHL-P](https://ohwr.org/cern_ohl_p_v2.txt) in the upstream PLFM_RADAR repository.
+**MIT** — scripts, wrappers, and committed `output/` artifacts in this repository ([LICENSE](LICENSE)).
 
-## Citation
-
-If you use this demo in coursework or research, please link to this repo and credit the AERIS-10 / PLFM_RADAR project.
+Upstream AERIS-10 FPGA RTL and hardware: **CERN-OHL-P** in PLFM_RADAR ([NOTICE.md](NOTICE.md)).

@@ -1,0 +1,54 @@
+[*]
+[*] GTKWave save file - AERIS-10 CFAR Demo
+[*]
+[dumpfile] "radar_demo.vcd"
+[savefile] "radar_demo.gtkw"
+[size] 1600 900
+[pos] 100 50
+*-12.000000 0 -1 -1 -1 -1 -1 -1
+[treeopen] radar_demo_tb.
+[treeopen] radar_demo_tb.dut.
+[sst_width] 280
+[signals_width] 220
+[sst_expanded] 1
+[sst_vpaned_height] 320
+@200
+-Saat / Reset
+@28
+radar_demo_tb.clk
+radar_demo_tb.reset_n
+@200
+-Doppler -> CFAR Girisleri
+@28
+radar_demo_tb.dop_valid
+@22
+radar_demo_tb.dop_data[31:0]
+radar_demo_tb.dop_bin[4:0]
+radar_demo_tb.rng_bin[5:0]
+@28
+radar_demo_tb.frame_done
+@200
+-CFAR Cikislari
+@28
+radar_demo_tb.cfar_busy
+radar_demo_tb.det_valid
+radar_demo_tb.det_flag
+@22
+radar_demo_tb.det_range[5:0]
+radar_demo_tb.det_doppler[4:0]
+radar_demo_tb.det_mag[16:0]
+radar_demo_tb.det_thr[16:0]
+radar_demo_tb.det_count[15:0]
+radar_demo_tb.cfar_status[7:0]
+@200
+-CFAR FSM Ic Durumlari (dut)
+@22
+radar_demo_tb.dut.state[3:0]
+radar_demo_tb.dut.cut_idx[6:0]
+radar_demo_tb.dut.col_idx[4:0]
+radar_demo_tb.dut.leading_sum[22:0]
+radar_demo_tb.dut.lagging_sum[22:0]
+radar_demo_tb.dut.noise_sum_reg[22:0]
+radar_demo_tb.dut.adaptive_thr[16:0]
+[pattern_trace] 1
+[pattern_trace] 0
