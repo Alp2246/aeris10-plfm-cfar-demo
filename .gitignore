@@ -1,0 +1,12 @@
+# Simulation build artifacts (regenerate locally)
+iverilog_demo/*.vcd
+iverilog_demo/*.vvp
+iverilog_demo/*.csv
+
+# MATLAB local cache
+matlab/output/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
