@@ -1,119 +1,114 @@
-# AERIS-10 PLFM Radar — CFAR Demos (MATLAB + Verilog)
+# AERIS-10 Radar CFAR — Verilog Testbench & Verification Demo
 
-[![MATLAB](https://img.shields.io/badge/MATLAB-R2019b+-blue.svg)](https://www.mathworks.com/products/matlab.html)
-[![Icarus Verilog](https://img.shields.io/badge/Icarus-Verilog-orange.svg)](https://steveicarus.github.io/iverilog/)
+**Author:** [Alperen Bugra Ozer](https://github.com/Alp2246)  
+**Verilog testbench + Icarus simulation harness + MATLAB cross-check**
+
+[![Verilog](https://img.shields.io/badge/Verilog-Icarus-orange.svg)](hdl/radar_demo_tb.v)
+[![MATLAB](https://img.shields.io/badge/MATLAB-R2019b+-blue.svg)](matlab/radar_cfar_demo.m)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Radar: X-band](https://img.shields.io/badge/Radar-10.5%20GHz-green.svg)]()
+[![Result: PASS](https://img.shields.io/badge/Sim-3%2F3%20PASS-brightgreen.svg)](output/iverilog_cfar_detections.txt)
 
-Open-source **CA-CFAR detection demos** for the [AERIS-10 PLFM phased-array radar](https://github.com/NawfalMotii79/PLFM_RADAR). Includes **committed run outputs** (figures, logs, summaries) under MIT license — see [NOTICE.md](NOTICE.md) for upstream hardware licensing.
+> Portfolio example: a **self-checking Verilog testbench** that drives real AERIS-10 CFAR FPGA IP, detects 3 synthetic radar targets, and prints PASS/FAIL — runnable with free tools (no Vivado sim).
 
-Same scenario everywhere: 3 synthetic targets at bins **8 / 22 / 45** (192 m / 528 m / 1080 m), LFSR noise seed `0xA5A51234`, CA-CFAR **G=2, T=8, α=5/16**.
-
----
-
-## Demo outputs (included in repo)
-
-### MATLAB figures
-
-| Output | Preview |
-|--------|---------|
-| 4-panel dashboard | ![cfar_demo](output/cfar_demo.png) |
-| PPI scope | ![cfar_ppi](output/cfar_ppi.png) |
-| Detection table | [`output/cfar_results.txt`](output/cfar_results.txt) |
-
-### Icarus Verilog figures and logs
-
-| Output | Description |
-|--------|-------------|
-| Range profile plot | ![iverilog_range](output/iverilog_range_profile.png) |
-| ASCII scope | [`output/iverilog_range_scope.txt`](output/iverilog_range_scope.txt) |
-| CFAR detections | [`output/iverilog_cfar_detections.txt`](output/iverilog_cfar_detections.txt) |
-| Full sim log | [`output/iverilog_cfar_demo_log.txt`](output/iverilog_cfar_demo_log.txt) |
-| 11-module test pack | [`output/iverilog_module_tests_summary.txt`](output/iverilog_module_tests_summary.txt) |
-
-### Cross-check
-
-| Output | Description |
-|--------|-------------|
-| MATLAB vs Verilog | [`output/matlab_vs_verilog_comparison.txt`](output/matlab_vs_verilog_comparison.txt) |
-
-**Verilog result:** 3/3 targets, 0 false alarms — **PASS**  
-**MATLAB result:** 3/3 targets — bins match (threshold math differs slightly: float vs fixed-point)
+![Verilog simulation output](output/iverilog_range_profile.png)
 
 ---
 
-## Quick start
+## What I built
 
-### Regenerate everything
+| Component | Path | Description |
+|-----------|------|-------------|
+| **Verilog testbench** | [`hdl/radar_demo_tb.v`](hdl/radar_demo_tb.v) | Stimulus, DUT hookup, detection capture, ASCII range plot, auto PASS/FAIL |
+| Simulation runner | [`iverilog_demo/demo.ps1`](iverilog_demo/demo.ps1) | One-click compile + coloured console demo |
+| MATLAB twin | [`matlab/radar_cfar_demo.m`](matlab/radar_cfar_demo.m) | Same scenario — figures for reports |
+| Walkthrough | [`docs/VERILOG_WALKTHROUGH.md`](docs/VERILOG_WALKTHROUGH.md) | Architecture + annotated code |
+
+**DUT (not mine):** [`third_party/cfar_ca.v`](third_party/cfar_ca.v) — CA-CFAR block from [AERIS-10 PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR).
+
+---
+
+## Verilog highlight — DUT + checker
+
+```verilog
+// hdl/radar_demo_tb.v — @Alp2246
+cfar_ca #(.NUM_RANGE_BINS(64), .NUM_DOPPLER_BINS(32)) dut ( ... );
+
+always @(posedge clk)
+    if (det_valid && cfar_busy && det_doppler == 5'd0 && det_flag)
+        $display("*** DETECTION *** bin=%0d range=%0d m", det_range, det_range * 24);
+
+// ...
+if (n_det_0 == 3)
+    $display(">>>> [PASS]  All targets found, zero false alarms.");
+```
+
+Full walkthrough: [**docs/VERILOG_WALKTHROUGH.md**](docs/VERILOG_WALKTHROUGH.md)
+
+---
+
+## Results (committed)
+
+| | Verilog | MATLAB |
+|---|---------|--------|
+| Targets found | 3/3 @ bins 8, 22, 45 | 3/3 — same bins |
+| False alarms | 0 | 0 |
+| Verdict | **PASS** | match |
+
+| Artifact | Link |
+|----------|------|
+| Range profile (plot) | [output/iverilog_range_profile.png](output/iverilog_range_profile.png) |
+| 4-panel figures | [output/cfar_demo.png](output/cfar_demo.png) |
+| Sim log | [output/iverilog_cfar_demo_log.txt](output/iverilog_cfar_demo_log.txt) |
+| Cross-check | [output/matlab_vs_verilog_comparison.txt](output/matlab_vs_verilog_comparison.txt) |
+
+---
+
+## Run it
 
 ```powershell
-.\scripts\export_outputs.ps1
-```
-
-### MATLAB only
-
-```matlab
-cd matlab
-radar_cfar_demo
-```
-
-```bat
-matlab\run_demo.bat
-```
-
-### Icarus Verilog CFAR demo
-
-```powershell
-cd iverilog_demo
+git clone https://github.com/Alp2246/aeris10-plfm-cfar-demo.git
+cd aeris10-plfm-cfar-demo\iverilog_demo
 .\demo.ps1 -NoWave
 ```
 
-### Full RTL module pack (11 tests)
+```bash
+iverilog -g2012 -DSIMULATION -o sim.vvp -s radar_demo_tb \
+  hdl/radar_demo_tb.v third_party/cfar_ca.v
+vvp sim.vvp
+```
 
-Requires full PLFM_RADAR clone:
+```matlab
+cd matlab; radar_cfar_demo
+```
 
-```powershell
-$env:PLFM_RADAR_ROOT = "C:\path\to\PLFM_RADAR-main"
-cd iverilog_demo
-.\sim.ps1 -Radar
+Regenerate all outputs: `.\scripts\export_outputs.ps1`
+
+---
+
+## Repo layout
+
+```
+hdl/                    ← my Verilog (start here for code review)
+  radar_demo_tb.v
+  hello_tb.v
+third_party/            ← AERIS-10 CFAR IP (DUT)
+iverilog_demo/          ← demo.ps1, GTKWave config
+matlab/                 ← MATLAB figures
+output/                 ← committed run artifacts
+docs/VERILOG_WALKTHROUGH.md
 ```
 
 ---
 
-## Repository layout
+## Scenario
 
-```
-matlab/                 MATLAB scripts + batch runner
-iverilog_demo/          demo.ps1, radar_demo_tb.v, bundled rtl/cfar_ca.v
-output/                 Committed demo artifacts (PNG, TXT, logs)
-scripts/                export_outputs.ps1, plot_range_profile.py
-LICENSE                 MIT (this repo's original work + outputs)
-NOTICE.md               MIT vs CERN-OHL-P upstream split
-```
+- **Radar:** 10.5 GHz X-band, 100 MHz baseband, 24 m/bin, 1536 m max range  
+- **CFAR:** CA-CFAR, guard=2, train=8, α=5/16  
+- **Targets:** 192 m / 528 m / 1080 m — seed `0xA5A51234`
 
 ---
 
-## Radar parameters
+## License & credits
 
-| Parameter | Value |
-|-----------|-------|
-| Carrier | 10.5 GHz (X-band) |
-| Baseband fs | 100 MHz |
-| Range bin | 24 m (16× decimation) |
-| Max range | 1536 m (64 bins) |
-| CFAR | CA-CFAR, G=2, T=8, α=5/16 |
-
----
-
-## Related projects
-
-- [PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) — full AERIS-10 hardware and firmware (CERN-OHL-P)
-- [matlab-fmcw-isac-examples](https://github.com/Alp2246/matlab-fmcw-isac-examples) — FMCW / ISAC MATLAB demos
-
----
-
-## License
-
-**MIT** — scripts, wrappers, and committed `output/` artifacts in this repository ([LICENSE](LICENSE)).
-
-Upstream AERIS-10 FPGA RTL and hardware: **CERN-OHL-P** in PLFM_RADAR ([NOTICE.md](NOTICE.md)).
+MIT — my testbench, scripts, docs, and `output/` artifacts.  
+DUT credit: AERIS-10 team. See [CREDITS.md](CREDITS.md).

@@ -11,18 +11,25 @@ $ErrorActionPreference = "Continue"
 $env:Path = "C:\iverilog\bin;C:\iverilog\gtkwave\bin;" + $env:Path
 
 $workDir = $PSScriptRoot
+$repoRoot = Split-Path -Parent $workDir
 Set-Location $workDir
 
-$bundledRtl = Join-Path $workDir "rtl"
-$plfmRoot   = if ($env:PLFM_RADAR_ROOT) { $env:PLFM_RADAR_ROOT } else {
-    Join-Path (Split-Path -Parent (Split-Path -Parent $workDir)) "PLFM_RADAR-main\PLFM_RADAR-main"
+$tbSrc   = Join-Path $repoRoot "hdl\radar_demo_tb.v"
+$cfarCandidates = @(
+    (Join-Path $repoRoot "third_party\cfar_ca.v"),
+    (Join-Path $workDir "rtl\cfar_ca.v")
+)
+$plfmRoot = if ($env:PLFM_RADAR_ROOT) { $env:PLFM_RADAR_ROOT } else {
+    Join-Path (Split-Path -Parent $repoRoot) "PLFM_RADAR-main\PLFM_RADAR-main"
 }
-if (Test-Path (Join-Path $bundledRtl "cfar_ca.v")) {
-    $rtlDir = $bundledRtl
-} elseif (Test-Path (Join-Path $plfmRoot "9_Firmware\9_2_FPGA\cfar_ca.v")) {
-    $rtlDir = Join-Path $plfmRoot "9_Firmware\9_2_FPGA"
-} else {
-    Write-Host "HATA: cfar_ca.v bulunamadi. rtl/ klasorunu veya PLFM_RADAR_ROOT ortam degiskenini ayarla." -ForegroundColor Red
+$cfarCandidates += (Join-Path $plfmRoot "9_Firmware\9_2_FPGA\cfar_ca.v")
+
+$cfarSrc = $cfarCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+if (-not (Test-Path $tbSrc)) {
+    $tbSrc = Join-Path $workDir "radar_demo_tb.v"   # legacy fallback
+}
+if (-not $cfarSrc) {
+    Write-Host "HATA: cfar_ca.v bulunamadi (third_party/ veya PLFM_RADAR_ROOT)." -ForegroundColor Red
     exit 1
 }
 
@@ -37,9 +44,9 @@ Write-Host (C-Bold (C-FG 0 230 230 "============================================
 Write-Host (C-Bold (C-FG 0 230 230 "   AERIS-10 RADAR  -  CFAR DETECTION DEMO"))
 Write-Host (C-Bold (C-FG 0 230 230 "=============================================================="))
 Write-Host (C-FG 220 220 80 " Adim 1/4 : Compile (iverilog)")
+Write-Host (C-FG 150 150 150 "  TB: $tbSrc")
+Write-Host (C-FG 150 150 150 "  DUT: $cfarSrc")
 
-$cfarSrc = Join-Path $rtlDir "cfar_ca.v"
-$tbSrc   = Join-Path $workDir "radar_demo_tb.v"
 $vvp     = Join-Path $workDir "radar_demo.vvp"
 $vcd     = Join-Path $workDir "radar_demo.vcd"
 $gtkw    = Join-Path $workDir "radar_demo.gtkw"
