@@ -1,0 +1,11 @@
+AERIS-10 CFAR Demo Results
+Generated: 18-Jun-2026 16:32:31
+
+Radar: fc=10.5 GHz, fs=100 MHz, bin=24.0 m, max_range=1536 m
+CFAR: CA-CFAR G=2 T=8 alpha=5/16
+
+bin | range_m | km   | mag   | thr   | margin_pct
+----+---------+------+-------+-------+-----------
+  9 |     192 | 0.19 | 30000 | 12051 | 149%
+ 23 |     528 | 0.53 | 20000 | 14180 | 41%
+ 46 |    1080 | 1.08 | 50000 | 13426 | 272%
