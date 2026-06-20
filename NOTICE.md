@@ -29,8 +29,14 @@ Licensed under the [MIT License](LICENSE). You may use, copy, modify, merge, pub
 | `scripts/plot_range_profile.py` | Range-profile PNG export |
 | `scripts/requirements.txt` | Python dependencies |
 | `output/*` | Committed simulation logs, PNG figures, summary tables |
-| `docs/VERILOG_WALKTHROUGH.md` | Technical walkthrough |
-| `README.md`, `CREDITS.md`, `NOTICE.md`, `.gitignore` | Repository documentation |
+| `scripts/fetch_matlab_gallery.ps1` | Sync gallery PNGs from sibling MIT repos |
+| `docs/RADAR_SYSTEM.md` | Full radar chain + output map |
+| `docs/OUTPUT_CATALOG.md` | Every committed artifact indexed |
+| `docs/LEGAL.md` | Detailed legal (EN + TR), thesis / YÖK notes |
+| `docs/REFERENCES.md` | Bibliography & links |
+| `third_party/CERN-OHL-P-NOTICE.txt` | Hardware redistribution notice |
+| `docs/VERILOG_WALKTHROUGH.md` | Verilog code walkthrough |
+| `README.md`, `CREDITS.md`, `NOTICE.md`, `CITATION.cff`, `.gitignore` | Top-level documentation |
 
 ### Suggested attribution (copy-paste)
 
@@ -87,12 +93,29 @@ All files under `output/` are **generated results** from running the demos. They
 |------|-------------|
 | `output/matlab/cfar/*.png`, `cfar_results.txt` | MATLAB `radar_cfar_demo.m` (5 panels + 4-panel) |
 | `output/cfar_demo.png`, `cfar_ppi.png` | Legacy copies of CFAR run (same script) |
-| `output/matlab/gallery/*.png` | Fetched from [matlab-fmcw-isac-examples](https://github.com/Alp2246/matlab-fmcw-isac-examples), [matlab-wireless-comm-examples](https://github.com/Alp2246/matlab-wireless-comm-examples), [gnss-spoofing-research](https://github.com/Alp2246/gnss-spoofing-research) — MIT |
+| `output/matlab/gallery/*.png` | See table below — MIT (sibling Alp2246 repos) |
 | `iverilog_range_profile.png` | Python `plot_range_profile.py` |
 | `iverilog_cfar_demo_log.txt`, `iverilog_cfar_detections.txt` | Icarus `demo.ps1` / `vvp` |
 | `iverilog_module_tests_summary.txt` | Icarus `sim.ps1 -Radar` |
 | `iverilog_range_scope.txt` | Derived ASCII scope |
 | `matlab_vs_verilog_comparison.txt` | Cross-check summary |
+
+### Gallery file licence map (`output/matlab/gallery/`)
+
+| PNG file | Upstream repository | Licence |
+|----------|---------------------|---------|
+| `fmcw_range_doppler.png` | [matlab-fmcw-isac-examples](https://github.com/Alp2246/matlab-fmcw-isac-examples) | MIT |
+| `fmcw_mimo_animasyon.png` | same | MIT |
+| `fmcw_kalman_tracker.png` | same | MIT |
+| `isac_ofdm_sensing.png` | same | MIT |
+| `bpsk_ber_awgn.png` | [matlab-wireless-comm-examples](https://github.com/Alp2246/matlab-wireless-comm-examples) | MIT |
+| `pseudorange_prn_bias_fig1.png` | [gnss-spoofing-research](https://github.com/Alp2246/gnss-spoofing-research) | MIT |
+| `pseudorange_prn_bias_fig2.png` | same | MIT |
+| `pseudorange_ramp_bias.png` | same | MIT |
+| `residual_spoof_detect.png` | same | MIT |
+| `softgnss_track_metrics.png` | same | MIT |
+
+Refresh: `scripts/fetch_matlab_gallery.ps1`. Full index: [docs/OUTPUT_CATALOG.md](docs/OUTPUT_CATALOG.md).
 
 ---
 
@@ -108,7 +131,19 @@ Running simulations does not convey a license on MathWorks or GPL tools themselv
 
 ---
 
-## 6. Disclaimer
+## 6. Academic & YÖK use
+
+For Turkish university reports (bitirme / yüksek lisans tezi):
+
+- Cite **this repo (MIT)** for testbench, scripts, and CFAR figures you generated from `radar_cfar_demo.m`.
+- Cite **PLFM_RADAR (CERN-OHL-P)** for `cfar_ca.v` and any upstream AERIS-10 diagrams you link.
+- Cite **each gallery source repo** when reusing FMCW / wireless / GNSS figures.
+
+Templates and bibliography examples: [docs/LEGAL.md](docs/LEGAL.md) (English + Türkçe).
+
+---
+
+## 7. Disclaimer
 
 Radar and FPGA demos are for **education, verification, and portfolio** purposes. They are not certified for safety-critical, defence, or production radar deployment. Simulation results do not replace calibrated hardware measurements.
 
@@ -121,5 +156,7 @@ Radar and FPGA demos are for **education, verification, and portfolio** purposes
 | My Verilog TB, scripts, MATLAB, docs, outputs | **MIT** | [LICENSE](LICENSE) |
 | `cfar_ca.v` (DUT) | **CERN-OHL-P** | [third_party/](third_party/) |
 | Full AERIS-10 hardware | **CERN-OHL-P** | [PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) |
+| Gallery PNGs (10 files) | **MIT** | Sibling Alp2246 repos — see §4 table |
+| Legal / thesis guide | — | [docs/LEGAL.md](docs/LEGAL.md) |
 
 See also [CREDITS.md](CREDITS.md) for author and upstream credits.

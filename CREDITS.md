@@ -43,4 +43,13 @@
 
 ## Citation file
 
-Machine-readable metadata: [`CITATION.cff`](CITATION.cff) (if present in repo root).
+| Machine-readable metadata | [`CITATION.cff`](CITATION.cff) (if present in repo root).
+
+### Upstream platform (reference only — not bundled)
+
+| Asset | Source | Licence |
+|-------|--------|---------|
+| System photos, block diagram, GUI GIF | [PLFM_RADAR / 8_Utils](https://github.com/NawfalMotii79/PLFM_RADAR/tree/main/8_Utils) | CERN-OHL-P |
+| Full FPGA firmware tree | same repo `9_Firmware/` | CERN-OHL-P + MIT (software) per upstream |
+
+Link to upstream images in reports; do not claim ownership. See [docs/RADAR_SYSTEM.md](docs/RADAR_SYSTEM.md).

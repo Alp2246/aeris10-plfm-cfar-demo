@@ -1,0 +1,21 @@
+CERN Open Hardware Licence v2 — Permissive (CERN-OHL-P)
+================================================================
+
+This notice applies to hardware description files in this directory.
+
+Product:     cfar_ca.v
+Upstream:    AERIS-10 PLFM Radar — https://github.com/NawfalMotii79/PLFM_RADAR
+Licensor:    AERIS-10 open-hardware contributors (see upstream repository)
+License:     CERN-OHL-P v2 — https://ohwr.org/cern_ohl_p_v2.txt
+
+You may use, copy, modify, and distribute cfar_ca.v under the terms of
+CERN-OHL-P. This bundled copy is provided so the MIT-licensed testbench in
+hdl/radar_demo_tb.v can simulate standalone.
+
+Obligations when redistributing (summary — read full licence text):
+  • Keep this notice and the full CERN-OHL-P licence text with the file.
+  • Document modifications if you change cfar_ca.v.
+  • Do not imply endorsement by CERN or the upstream authors.
+
+Full legal text: https://ohwr.org/cern_ohl_p_v2.txt
+Repository legal index: ../docs/LEGAL.md and ../NOTICE.md

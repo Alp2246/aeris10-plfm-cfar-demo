@@ -1,16 +1,37 @@
-# AERIS-10 Radar CFAR — Verilog Testbench & Verification Demo
+# AERIS-10 Radar — Full verification portfolio
 
 **Author:** [Alperen Bugra Ozer](https://github.com/Alp2246)  
-**Verilog testbench + Icarus simulation harness + MATLAB cross-check**
+**Verilog testbench · Icarus simulation · MATLAB figures · related radar/GNSS demos**
 
 [![Verilog](https://img.shields.io/badge/Verilog-Icarus-orange.svg)](hdl/radar_demo_tb.v)
 [![MATLAB](https://img.shields.io/badge/MATLAB-R2019b+-blue.svg)](matlab/radar_cfar_demo.m)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Result: PASS](https://img.shields.io/badge/Sim-3%2F3%20PASS-brightgreen.svg)](output/iverilog_cfar_detections.txt)
+[![License: MIT](https://img.shields.io/badge/Original-MIT-yellow.svg)](LICENSE)
+[![DUT: CERN-OHL-P](https://img.shields.io/badge/DUT-CERN--OHL--P-blue.svg)](third_party/CERN-OHL-P-NOTICE.txt)
+[![Sim: PASS](https://img.shields.io/badge/CFAR-3%2F3%20PASS-brightgreen.svg)](output/iverilog_cfar_detections.txt)
 
-> Portfolio example: a **self-checking Verilog testbench** that drives real AERIS-10 CFAR FPGA IP, detects 3 synthetic radar targets, and prints PASS/FAIL — runnable with free tools (no Vivado sim).
+> **Complete radar picture:** CFAR stage verified in Verilog + MATLAB, mapped onto the AERIS-10 FPGA chain, with committed outputs and detailed licensing for thesis / portfolio use.
 
-![Verilog simulation output](output/iverilog_range_profile.png)
+📘 **System context:** [docs/RADAR_SYSTEM.md](docs/RADAR_SYSTEM.md) · **All outputs:** [docs/OUTPUT_CATALOG.md](docs/OUTPUT_CATALOG.md) · **Legal (EN/TR):** [docs/LEGAL.md](docs/LEGAL.md)
+
+![Verilog range profile](output/iverilog_range_profile.png)
+
+---
+
+## Full radar signal chain (where this demo sits)
+
+```mermaid
+flowchart LR
+    A[LFM chirp] --> B[Pulse compression]
+    B --> C[Doppler FFT]
+    C --> D[MTI]
+    D --> E[CA-CFAR]
+    E --> F[Targets / GUI]
+    TB[My Verilog TB] -.verifies.-> E
+    ML[My MATLAB] -.same scenario.-> E
+```
+
+Upstream platform: [AERIS-10 PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) (10.5 GHz phased array, CERN-OHL-P).  
+This repo verifies **step E** and documents the full context in [RADAR_SYSTEM.md](docs/RADAR_SYSTEM.md).
 
 ---
 
@@ -78,9 +99,13 @@ Full walkthrough: [**docs/VERILOG_WALKTHROUGH.md**](docs/VERILOG_WALKTHROUGH.md)
 |:---:|:---:|:---:|:---:|
 | ![rd](output/matlab/gallery/fmcw_range_doppler.png) | ![mimo](output/matlab/gallery/fmcw_mimo_animasyon.png) | ![kalman](output/matlab/gallery/fmcw_kalman_tracker.png) | ![isac](output/matlab/gallery/isac_ofdm_sensing.png) |
 
-| BPSK BER | GNSS PRN bias | Spoof residual | Track metrics |
+| BPSK BER | PRN bias 1 | PRN bias 2 | Ramp bias |
 |:---:|:---:|:---:|:---:|
-| ![bpsk](output/matlab/gallery/bpsk_ber_awgn.png) | ![prn](output/matlab/gallery/pseudorange_prn_bias_fig1.png) | ![res](output/matlab/gallery/residual_spoof_detect.png) | ![track](output/matlab/gallery/softgnss_track_metrics.png) |
+| ![bpsk](output/matlab/gallery/bpsk_ber_awgn.png) | ![prn1](output/matlab/gallery/pseudorange_prn_bias_fig1.png) | ![prn2](output/matlab/gallery/pseudorange_prn_bias_fig2.png) | ![ramp](output/matlab/gallery/pseudorange_ramp_bias.png) |
+
+| Spoof residual | Track metrics |
+|:---:|:---:|
+| ![res](output/matlab/gallery/residual_spoof_detect.png) | ![track](output/matlab/gallery/softgnss_track_metrics.png) |
 
 Sources: [matlab-fmcw-isac-examples](https://github.com/Alp2246/matlab-fmcw-isac-examples) · [matlab-wireless-comm-examples](https://github.com/Alp2246/matlab-wireless-comm-examples) · [gnss-spoofing-research](https://github.com/Alp2246/gnss-spoofing-research)
 
@@ -117,12 +142,18 @@ hdl/                    ← my Verilog (start here for code review)
 third_party/            ← AERIS-10 CFAR IP (DUT)
 iverilog_demo/          ← demo.ps1, GTKWave config
 matlab/                 ← MATLAB figures
-output/                 ← committed run artifacts
-docs/VERILOG_WALKTHROUGH.md
+output/                 ← all committed artifacts (see OUTPUT_CATALOG.md)
+docs/
+  RADAR_SYSTEM.md       ← full chain + upstream links
+  OUTPUT_CATALOG.md       ← every PNG/TXT indexed
+  LEGAL.md              ← detailed licence (EN + TR, YÖK)
+  REFERENCES.md         ← BibTeX & reading list
+  VERILOG_WALKTHROUGH.md
 LICENSE                  MIT — original work
-NOTICE.md                Full license split (MIT vs CERN-OHL-P)
-CREDITS.md               Author + citation examples
-CITATION.cff             Machine-readable metadata
+NOTICE.md                File-by-file licence map
+CREDITS.md               Author + citations
+CITATION.cff
+third_party/CERN-OHL-P-NOTICE.txt
 ```
 
 ---
@@ -144,11 +175,15 @@ This repo uses **two licenses** — original demo work vs upstream FPGA IP.
 | `hdl/`, `matlab/`, `scripts/`, `output/`, docs | [Alperen Bugra Ozer](https://github.com/Alp2246) | **MIT** | [LICENSE](LICENSE) |
 | `third_party/cfar_ca.v` (DUT) | [AERIS-10 / PLFM_RADAR](https://github.com/NawfalMotii79/PLFM_RADAR) | **CERN-OHL-P** | [third_party/](third_party/) |
 
-**Full breakdown** (file-by-file, output artifacts, tool licenses, attribution text):
+**Full legal pack** (thesis / YÖK / portfolio):
 
-- [NOTICE.md](NOTICE.md) — complete license notice  
-- [CREDITS.md](CREDITS.md) — author + thesis citation examples  
-- [CITATION.cff](CITATION.cff) — machine-readable cite metadata  
+- [docs/LEGAL.md](docs/LEGAL.md) — English + Türkçe, figure captions, CERN-OHL-P duties  
+- [NOTICE.md](NOTICE.md) — file-by-file MIT vs CERN-OHL-P map + gallery table  
+- [docs/OUTPUT_CATALOG.md](docs/OUTPUT_CATALOG.md) — every committed output  
+- [CREDITS.md](CREDITS.md) — author + BibTeX-style citations  
+- [docs/REFERENCES.md](docs/REFERENCES.md) — further reading  
+- [third_party/CERN-OHL-P-NOTICE.txt](third_party/CERN-OHL-P-NOTICE.txt) — hardware redistribution  
 
 [![License: MIT](https://img.shields.io/badge/Original%20work-MIT-yellow.svg)](LICENSE)
 [![Hardware: CERN-OHL-P](https://img.shields.io/badge/DUT-CERN--OHL--P-blue.svg)](https://ohwr.org/cern_ohl_p_v2.txt)
+[![Legal: EN+TR](https://img.shields.io/badge/Legal-EN%2BTR-lightgrey.svg)](docs/LEGAL.md)
