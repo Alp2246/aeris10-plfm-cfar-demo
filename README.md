@@ -13,18 +13,31 @@
 
 📘 **System context:** [docs/RADAR_SYSTEM.md](docs/RADAR_SYSTEM.md) · **All outputs:** [docs/OUTPUT_CATALOG.md](docs/OUTPUT_CATALOG.md) · **Legal (EN/TR):** [docs/LEGAL.md](docs/LEGAL.md)
 
-![Verilog range profile](output/iverilog/02_range_profile_log.png)
+### Icarus Verilog — simulation figures
 
-### Icarus Verilog — simulation figures (`output/iverilog/`)
+See [`output/iverilog/`](output/iverilog/) · Regenerate: `demo.ps1 -NoWave` then `python scripts/plot_iverilog_outputs.py`
 
-| Waveforms (VCD) | Range + CFAR (log) | Radar scope | Console PASS |
-|:---:|:---:|:---:|:---:|
-| ![wf](output/iverilog/01_cfar_waveforms.png) | ![rp](output/iverilog/02_range_profile_log.png) | ![sc](output/iverilog/03_radar_scope.png) | ![con](output/iverilog/04_console_pass.png) |
-| det_flag / cfar_busy | Real mag + threshold | bins 8, 22, 45 | `>>>> [PASS]` |
+**CFAR waveforms (VCD)** — `cfar_busy`, `det_valid`, `det_flag`, `det_range`:
 
-Detection timeline (VCD): [05_detection_timeline.png](output/iverilog/05_detection_timeline.png)  
-Regenerate: `python scripts/plot_iverilog_outputs.py` after `iverilog_demo\demo.ps1 -NoWave`  
-Interactive: `gtkwave iverilog_demo/radar_demo.gtkw`
+![CFAR waveforms](output/iverilog/01_cfar_waveforms.png)
+
+**Range profile + threshold** (parsed from sim log):
+
+![Range profile](output/iverilog/02_range_profile_log.png)
+
+**Radar scope** (bins 8, 22, 45):
+
+![Radar scope](output/iverilog/03_radar_scope.png)
+
+**Console — DETECTION + PASS:**
+
+![Console PASS](output/iverilog/04_console_pass.png)
+
+**Detection timeline (VCD):**
+
+![Detection timeline](output/iverilog/05_detection_timeline.png)
+
+Interactive waveforms: `gtkwave iverilog_demo/radar_demo.gtkw`
 
 ---
 

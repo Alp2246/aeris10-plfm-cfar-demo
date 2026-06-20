@@ -102,6 +102,14 @@ foreach ($line in $simLines) {
 Write-Host (C-FG 80 80 80 "--------------------------------------------------------------")
 Write-Host (C-FG 100 100 100 (" Simulasyon suresi: $simSec saniye"))
 
+# Temiz log (ANSI yok) -> output/ — plot script icin
+$repoRoot = Split-Path -Parent $workDir
+$logPath  = Join-Path $repoRoot "output\iverilog_cfar_demo_log.txt"
+$esc = [char]27
+$clean = $simLines | ForEach-Object { $_ -replace "$esc\[[0-9;]*m", "" }
+$clean | Out-File -FilePath $logPath -Encoding utf8
+Write-Host (C-FG 0 220 0 "  Log kaydedildi: output\iverilog_cfar_demo_log.txt")
+
 # ============================================================
 # RADAR SCOPE - PowerShell renkli gorsel
 # ============================================================

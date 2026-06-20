@@ -19,7 +19,7 @@ LOG = REPO / "output" / "iverilog_cfar_demo_log.txt"
 OUT = REPO / "output" / "iverilog"
 OUT.mkdir(parents=True, exist_ok=True)
 
-# VCD symbol IDs at radar_demo_tb top scope (from iverilog dump)
+# radar_demo_tb top-level VCD symbol IDs (iverilog dump)
 SIG = {
     "det_flag": "%",
     "cfar_busy": ")",
@@ -27,92 +27,98 @@ SIG = {
     "det_range": "#",
     "det_mag": "$",
     "det_thr": '"',
-    "clk": "2",
 }
 
 
-def parse_vcd_signals(path: Path, end_time: int = 110_000_000) -> dict:
-    """Lightweight VCD parser for selected radar_demo_tb signals."""
-    state: dict[str, int | str] = {k: 0 for k in SIG}
-    series: dict[str, list[tuple[int, float]]] = {k: [] for k in SIG}
-
-    def sample(t: int) -> None:
-        if t > end_time:
+def _apply_line(state: dict, line: str) -> None:
+    line = line.strip()
+    if not line or line.startswith("$"):
+        return
+    if line[0] in "01":
+        sid = line[1:]
+        val = int(line[0])
+    elif line[0] == "b":
+        parts = line[1:].split()
+        if len(parts) != 2:
             return
-        for name in SIG:
-            v = state[name]
-            if isinstance(v, str):
-                try:
-                    v = int(v, 2)
-                except ValueError:
-                    v = 0
-            series[name].append((t, float(v)))
+        val, sid = parts[0], parts[1]
+    elif line[0] in "r":
+        return
+    else:
+        return
+    for name, sym in SIG.items():
+        if sym == sid:
+            state[name] = int(val, 2) if isinstance(val, str) else val
+            break
+
+
+def parse_vcd_signals(path: Path) -> dict:
+    """
+    VCD rule: '#' timestamp applies to value changes listed AFTER it.
+    """
+    state: dict[str, int] = {k: 0 for k in SIG}
+    series: dict[str, list[tuple[int, float]]] = {k: [] for k in SIG}
+    current_time = 0
 
     with path.open("r", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            line = line.strip()
+        for raw in f:
+            line = raw.strip()
             if not line:
                 continue
             if line.startswith("#"):
-                t = int(line[1:])
-                sample(t)
+                current_time = int(line[1:])
                 continue
-            if line[0] in "01":
-                sid = line[1:]
-                if sid in SIG.values():
-                    for name, sym in SIG.items():
-                        if sym == sid:
-                            state[name] = int(line[0])
-                            break
-            elif line[0] == "b":
-                parts = line[1:].split()
-                if len(parts) == 2:
-                    val, sid = parts[0], parts[1]
-                    for name, sym in SIG.items():
-                        if sym == sid:
-                            state[name] = val
-                            break
+            _apply_line(state, line)
+            for name in SIG:
+                series[name].append((current_time, float(state[name])))
+
     return series
 
 
-def parse_log_range_profile(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[int]]:
-    """Parse ASCII range table from iverilog demo log."""
-    bins, mag, thr, det = [], [], [], []
+def strip_ansi(text: str) -> str:
+    return re.sub(r"\x1b\[[0-9;]*m", "", text)
+
+
+def parse_log_range_profile(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray, list[int]]:
+    if not path.exists() or path.stat().st_size == 0:
+        raise ValueError(f"Log empty or missing: {path}")
+
+    text = strip_ansi(path.read_text(encoding="utf-8", errors="ignore"))
+    bins, mag, thr, det_bins = [], [], [], []
     pat = re.compile(
-        r"^\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*([.*])\s*\|"
+        r"^\s*(\d+)\s*\|\s*\d+\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*([.*])\s*\|"
     )
-    text = path.read_text(encoding="utf-8", errors="ignore")
     for line in text.splitlines():
-        # strip ANSI
-        line = re.sub(r"\x1b\[[0-9;]*m", "", line)
         m = pat.match(line)
         if m:
-            b, _, mval, tval, d = m.groups()
-            bins.append(int(b))
+            b, mval, tval, d = m.groups()
+            b = int(b)
+            bins.append(b)
             mag.append(int(mval))
             thr.append(int(tval))
-            det.append(b if d == "*" else -1)
-    det_bins = [b for b in det if b >= 0]
-    return (
-        np.array(bins),
-        np.array(mag, dtype=float),
-        np.array(thr, dtype=float),
-        np.array([1 if b in det_bins else 0 for b in bins]),
-        det_bins,
-    )
+            if d == "*":
+                det_bins.append(b)
+
+    if not bins:
+        raise ValueError("No range rows parsed from log — re-run demo.ps1 -NoWave")
+
+    return np.array(bins), np.array(mag, dtype=float), np.array(thr, dtype=float), det_bins
 
 
 def plot_waveforms(series: dict) -> Path:
-    """GTKWave-style detection waveform (CFAR phase zoom)."""
-    t = np.array([p[0] for p in series["cfar_busy"]]) / 1000.0  # ns -> us scale label
-    busy = np.array([p[1] for p in series["cfar_busy"]])
-    flag = np.array([p[1] for p in series["det_flag"]])
-    valid = np.array([p[1] for p in series["det_valid"]])
-    rng = np.array([p[1] for p in series["det_range"]])
+    """CFAR phase — time in microseconds (VCD timescale = 1 ps)."""
+    def to_us(key: str) -> tuple[np.ndarray, np.ndarray]:
+        t = np.array([p[0] for p in series[key]], dtype=float) / 1e6
+        v = np.array([p[1] for p in series[key]], dtype=float)
+        return t, v
 
-    # Zoom to CFAR active region
-    mask = (t >= 15) & (t <= 35)
-    t, busy, flag, valid, rng = t[mask], busy[mask], flag[mask], valid[mask], rng[mask]
+    t_busy, busy = to_us("cfar_busy")
+    t_flag, flag = to_us("det_flag")
+    t_valid, valid = to_us("det_valid")
+    t_rng, rng = to_us("det_range")
+
+    # CFAR activity ~20–23 µs (detections at 21–22 µs)
+    tmin, tmax = 19.5, 23.5
 
     fig, axes = plt.subplots(4, 1, figsize=(14, 8), sharex=True, facecolor="#1a1a22")
     fig.suptitle(
@@ -130,21 +136,22 @@ def plot_waveforms(series: dict) -> Path:
         for sp in ax.spines.values():
             sp.set_color("#444")
         ax.grid(True, alpha=0.2, color="#555")
+        ax.set_xlim(tmin, tmax)
 
     style_ax(axes[0], "cfar_busy", "busy")
-    axes[0].fill_between(t, 0, busy, color="#4af", alpha=0.5, step="post")
-    axes[0].plot(t, busy, color="#6cf", drawstyle="steps-post", linewidth=1)
+    axes[0].plot(t_busy, busy, color="#6cf", drawstyle="steps-post", linewidth=1.5)
+    axes[0].fill_between(t_busy, 0, busy, color="#4af", alpha=0.35, step="post")
 
     style_ax(axes[1], "det_valid", "valid")
-    axes[1].plot(t, valid, color="#fa0", drawstyle="steps-post", linewidth=1.2)
+    axes[1].plot(t_valid, valid, color="#fa0", drawstyle="steps-post", linewidth=1.2)
 
     style_ax(axes[2], "det_flag (detection pulse)", "flag")
-    axes[2].fill_between(t, 0, flag, color="#f44", alpha=0.6, step="post")
-    axes[2].plot(t, flag, color="#f66", drawstyle="steps-post", linewidth=1.5)
+    axes[2].plot(t_flag, flag, color="#f66", drawstyle="steps-post", linewidth=2)
+    axes[2].fill_between(t_flag, 0, flag, color="#f44", alpha=0.5, step="post")
 
     style_ax(axes[3], "det_range[5:0] when valid", "bin")
-    axes[3].plot(t, rng, color="#5f5", drawstyle="steps-post", linewidth=1.2)
-    axes[3].set_xlabel("Time (µs from VCD timescale)", color="#aaa")
+    axes[3].plot(t_rng, rng, color="#5f5", drawstyle="steps-post", linewidth=1.5)
+    axes[3].set_xlabel("Time (µs)  [VCD timescale 1 ps]", color="#aaa")
 
     out = OUT / "01_cfar_waveforms.png"
     fig.tight_layout()
@@ -154,7 +161,6 @@ def plot_waveforms(series: dict) -> Path:
 
 
 def plot_range_from_log(bins, mag, thr, det_bins) -> Path:
-    """Range profile with real Verilog magnitudes + thresholds from sim log."""
     range_m = bins * 24
     colors = ["#ff4444" if b in det_bins else "#4a7099" for b in bins]
 
@@ -193,17 +199,12 @@ def plot_range_from_log(bins, mag, thr, det_bins) -> Path:
 
 
 def plot_radar_scope(det_bins: list[int]) -> Path:
-    """ASCII scope as graphic — 64 bins, targets marked."""
     fig, ax = plt.subplots(figsize=(14, 2.2), facecolor="#0a120a")
     ax.set_facecolor("#0a120a")
-    x = np.arange(64)
-    y = np.zeros(64)
     colors = ["#2a4a2a"] * 64
     for b in det_bins:
         colors[b] = "#ff3333" if b == 45 else "#ff9933" if b == 8 else "#ffcc00"
-        y[b] = 1
-
-    ax.bar(x, y, color=colors, width=0.85, edgecolor="#1a3a1a")
+    ax.bar(range(64), [1 if c != "#2a4a2a" else 0.15 for c in colors], color=colors, width=0.85)
     ax.set_xlim(-0.5, 63.5)
     ax.set_ylim(0, 1.35)
     ax.set_xlabel("Range bin (×24 m)", color="#6c6")
@@ -227,9 +228,7 @@ def plot_radar_scope(det_bins: list[int]) -> Path:
 
 
 def plot_console_summary(path: Path) -> Path:
-    """Terminal-style PNG from key sim lines."""
-    raw = path.read_text(encoding="utf-8", errors="ignore")
-    raw = re.sub(r"\x1b\[[0-9;]*m", "", raw)
+    raw = strip_ansi(path.read_text(encoding="utf-8", errors="ignore"))
     keep = []
     for line in raw.splitlines():
         if any(
@@ -242,49 +241,30 @@ def plot_console_summary(path: Path) -> Path:
                 "Ground truth",
                 "Frame complete",
                 "SONUC",
+                "TARGET",
             )
         ):
-            keep.append(line.strip()[:100])
+            keep.append(line.strip()[:110])
     if not keep:
-        keep = ["(no log lines — run demo.ps1 first)"]
+        keep = ["(log empty — run: cd iverilog_demo && .\\demo.ps1 -NoWave)"]
 
     fig, ax = plt.subplots(figsize=(12, 6), facecolor="#0c0c0c")
     ax.set_facecolor("#0c0c0c")
     ax.axis("off")
     ax.text(
-        0.02,
-        0.98,
-        "Icarus Verilog + vvp — CFAR demo console",
-        transform=ax.transAxes,
-        color="#0ff",
-        fontsize=13,
-        fontweight="bold",
-        va="top",
-        family="monospace",
+        0.02, 0.98, "Icarus Verilog + vvp — CFAR demo console",
+        transform=ax.transAxes, color="#0ff", fontsize=13, fontweight="bold",
+        va="top", family="monospace",
     )
-    body = "\n".join(keep[:18])
     ax.text(
-        0.02,
-        0.88,
-        body,
-        transform=ax.transAxes,
-        color="#cfc",
-        fontsize=9.5,
-        va="top",
-        family="Consolas",
-        linespacing=1.45,
+        0.02, 0.88, "\n".join(keep[:20]),
+        transform=ax.transAxes, color="#cfc", fontsize=9,
+        va="top", family="Consolas", linespacing=1.45,
     )
-    ax.add_patch(
-        mpatches.FancyBboxPatch(
-            (0.01, 0.02),
-            0.98,
-            0.96,
-            boxstyle="round,pad=0.01",
-            linewidth=1,
-            edgecolor="#333",
-            facecolor="none",
-        )
-    )
+    ax.add_patch(mpatches.FancyBboxPatch(
+        (0.01, 0.02), 0.98, 0.96, boxstyle="round,pad=0.01",
+        linewidth=1, edgecolor="#333", facecolor="none",
+    ))
 
     out = OUT / "04_console_pass.png"
     fig.savefig(out, dpi=150, facecolor=fig.get_facecolor(), bbox_inches="tight")
@@ -293,41 +273,26 @@ def plot_console_summary(path: Path) -> Path:
 
 
 def plot_detection_timeline(series: dict) -> Path:
-    """Scatter: detection time vs range bin."""
-    times, bins, mags = [], [], []
-    t_prev, rng_prev, mag_prev, flag_prev = 0, 0, 0, 0
-    for i in range(len(series["det_flag"])):
-        t = series["det_flag"][i][0] / 1000.0
-        flag = series["det_flag"][i][1]
-        if flag == 1 and flag_prev == 0:
-            times.append(t)
-            bins.append(series["det_range"][i][1])
-            mags.append(series["det_mag"][i][1])
-        flag_prev = flag
-        t_prev = t
+    events = []
+    prev_flag = 0.0
+    for i, (t_ps, flag) in enumerate(series["det_flag"]):
+        if flag == 1 and prev_flag == 0:
+            t_us = t_ps / 1e6
+            rng = series["det_range"][i][1] if i < len(series["det_range"]) else 0
+            mag = series["det_mag"][i][1] if i < len(series["det_mag"]) else 0
+            events.append((t_us, rng, mag))
+        prev_flag = flag
 
     fig, ax = plt.subplots(figsize=(10, 5), facecolor="#101018")
     ax.set_facecolor("#101018")
-    if times:
-        sc = ax.scatter(
-            times,
-            bins,
-            c=mags,
-            s=[80 + m / 400 for m in mags],
-            cmap="hot",
-            edgecolors="white",
-            linewidths=1,
-        )
+    if events:
+        times, bins, mags = zip(*events)
+        sc = ax.scatter(times, bins, c=mags, s=[80 + m / 400 for m in mags],
+                        cmap="hot", edgecolors="white", linewidths=1)
         plt.colorbar(sc, ax=ax, label="det_mag")
         for t, b, m in zip(times, bins, mags):
-            ax.annotate(
-                f"{int(b)*24}m",
-                (t, b),
-                textcoords="offset points",
-                xytext=(6, 6),
-                color="#ff9",
-                fontsize=9,
-            )
+            ax.annotate(f"{int(b)*24}m", (t, b), textcoords="offset points",
+                        xytext=(6, 6), color="#ff9", fontsize=9)
     ax.set_xlabel("Time (µs)", color="#ccc")
     ax.set_ylabel("Range bin", color="#ccc")
     ax.set_title("Icarus Verilog — Detection events (VCD)", color="white", fontweight="bold")
@@ -345,13 +310,14 @@ def plot_detection_timeline(series: dict) -> Path:
 def main() -> None:
     if not VCD.exists():
         raise SystemExit(f"Missing {VCD} — run: cd iverilog_demo && .\\demo.ps1 -NoWave")
-    if not LOG.exists():
-        raise SystemExit(f"Missing {LOG} — run demo.ps1 first")
 
     print("Parsing VCD...")
     series = parse_vcd_signals(VCD)
+    print(f"  det_flag pulses: {int(sum(1 for _, v in series['det_flag'] if v == 1))}")
+
     print("Parsing log...")
-    bins, mag, thr, _, det_bins = parse_log_range_profile(LOG)
+    bins, mag, thr, det_bins = parse_log_range_profile(LOG)
+    print(f"  range rows: {len(bins)}, detections: {det_bins}")
 
     outputs = [
         plot_waveforms(series),
@@ -361,10 +327,8 @@ def main() -> None:
         plot_detection_timeline(series),
     ]
 
-    # Legacy path + README index
-    legacy = REPO / "output" / "iverilog_range_profile.png"
     import shutil
-
+    legacy = REPO / "output" / "iverilog_range_profile.png"
     shutil.copy2(outputs[1], legacy)
 
     for p in outputs:
