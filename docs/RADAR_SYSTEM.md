@@ -83,7 +83,8 @@ flowchart TB
 output/
 ├── matlab/cfar/          ← CFAR figures (this radar demo)
 ├── matlab/gallery/       ← FMCW, wireless, GNSS MATLAB portfolios
-├── iverilog_*.txt/png    ← Verilog logs & range plot
+├── iverilog/             ← 5 PNGs from VCD + sim log
+├── iverilog_*.txt/png    ← Verilog logs (legacy root plot)
 ├── cfar_demo.png         ← legacy CFAR composite
 └── matlab_vs_verilog_comparison.txt
 ```

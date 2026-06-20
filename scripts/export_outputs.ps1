@@ -44,10 +44,10 @@ if (Test-Path (Join-Path $plfmRoot "9_Firmware\9_2_FPGA\tb")) {
 }
 Pop-Location
 
-Write-Host "==> Python range plot (optional)"
-$py = Join-Path $repoRoot "scripts\plot_range_profile.py"
-if ((Get-Command python -ErrorAction SilentlyContinue) -and (Test-Path $py)) {
-    python $py
+Write-Host "==> Icarus Verilog figures (VCD + log)"
+$pyPlots = Join-Path $repoRoot "scripts\plot_iverilog_outputs.py"
+if ((Get-Command python -ErrorAction SilentlyContinue) -and (Test-Path $pyPlots)) {
+    python $pyPlots
 }
 
 Write-Host "Done. See output/ folder."

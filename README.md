@@ -13,7 +13,18 @@
 
 📘 **System context:** [docs/RADAR_SYSTEM.md](docs/RADAR_SYSTEM.md) · **All outputs:** [docs/OUTPUT_CATALOG.md](docs/OUTPUT_CATALOG.md) · **Legal (EN/TR):** [docs/LEGAL.md](docs/LEGAL.md)
 
-![Verilog range profile](output/iverilog_range_profile.png)
+![Verilog range profile](output/iverilog/02_range_profile_log.png)
+
+### Icarus Verilog — simulation figures (`output/iverilog/`)
+
+| Waveforms (VCD) | Range + CFAR (log) | Radar scope | Console PASS |
+|:---:|:---:|:---:|:---:|
+| ![wf](output/iverilog/01_cfar_waveforms.png) | ![rp](output/iverilog/02_range_profile_log.png) | ![sc](output/iverilog/03_radar_scope.png) | ![con](output/iverilog/04_console_pass.png) |
+| det_flag / cfar_busy | Real mag + threshold | bins 8, 22, 45 | `>>>> [PASS]` |
+
+Detection timeline (VCD): [05_detection_timeline.png](output/iverilog/05_detection_timeline.png)  
+Regenerate: `python scripts/plot_iverilog_outputs.py` after `iverilog_demo\demo.ps1 -NoWave`  
+Interactive: `gtkwave iverilog_demo/radar_demo.gtkw`
 
 ---
 

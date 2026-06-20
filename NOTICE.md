@@ -26,7 +26,8 @@ Licensed under the [MIT License](LICENSE). You may use, copy, modify, merge, pub
 | `iverilog_demo/KOMUTLAR.txt` | Command reference (Turkish) |
 | `iverilog_demo/README.md` | Runner documentation |
 | `scripts/export_outputs.ps1` | Regenerate all committed artifacts |
-| `scripts/plot_range_profile.py` | Range-profile PNG export |
+| `scripts/plot_iverilog_outputs.py` | VCD + log → 5 Verilog figure PNGs |
+| `scripts/plot_range_profile.py` | Synthetic range profile (legacy) |
 | `scripts/requirements.txt` | Python dependencies |
 | `output/*` | Committed simulation logs, PNG figures, summary tables |
 | `scripts/fetch_matlab_gallery.ps1` | Sync gallery PNGs from sibling MIT repos |
@@ -94,7 +95,8 @@ All files under `output/` are **generated results** from running the demos. They
 | `output/matlab/cfar/*.png`, `cfar_results.txt` | MATLAB `radar_cfar_demo.m` (5 panels + 4-panel) |
 | `output/cfar_demo.png`, `cfar_ppi.png` | Legacy copies of CFAR run (same script) |
 | `output/matlab/gallery/*.png` | See table below — MIT (sibling Alp2246 repos) |
-| `iverilog_range_profile.png` | Python `plot_range_profile.py` |
+| `iverilog/*.png` (5 files) | `scripts/plot_iverilog_outputs.py` from `radar_demo.vcd` + log |
+| `iverilog_range_profile.png` | Copy of `iverilog/02_range_profile_log.png` |
 | `iverilog_cfar_demo_log.txt`, `iverilog_cfar_detections.txt` | Icarus `demo.ps1` / `vvp` |
 | `iverilog_module_tests_summary.txt` | Icarus `sim.ps1 -Radar` |
 | `iverilog_range_scope.txt` | Derived ASCII scope |

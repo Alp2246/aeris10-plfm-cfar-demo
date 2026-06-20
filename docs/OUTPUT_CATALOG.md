@@ -31,11 +31,16 @@
 
 ---
 
-## Verilog / Python (`output/`)
+## Verilog / Python (`output/` root + `output/iverilog/`)
 
 | File | Generator |
 |------|-----------|
-| `iverilog_range_profile.png` | `scripts/plot_range_profile.py` |
+| `iverilog/01_cfar_waveforms.png` | VCD — cfar_busy, det_valid, det_flag, det_range |
+| `iverilog/02_range_profile_log.png` | Sim log — magnitude + threshold bars |
+| `iverilog/03_radar_scope.png` | 64-bin scope graphic |
+| `iverilog/04_console_pass.png` | Terminal DETECTION + PASS excerpt |
+| `iverilog/05_detection_timeline.png` | VCD — detection time vs bin |
+| `iverilog_range_profile.png` | Legacy copy of `02_range_profile_log.png` |
 | `iverilog_cfar_demo_log.txt` | `iverilog_demo/demo.ps1` |
 | `iverilog_cfar_detections.txt` | Parsed 3-target summary |
 | `iverilog_module_tests_log.txt` | `sim.ps1 -Radar` |
